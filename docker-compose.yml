@@ -1,0 +1,21 @@
+services:
+  db:
+    image: mysql/mysql-server:8.0
+    volumes:
+      - ./../.docker/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+    ports:
+      - "3308:3306"
+    env_file:
+      - ./.env
+  web:
+    build: .
+    restart: always
+    command: bash -c 'while !</dev/tcp/db/3306; do sleep 1; done; uvicorn main:app --host 0.0.0.0 --port 8000'
+    volumes:
+      - .:/code:z
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - db
